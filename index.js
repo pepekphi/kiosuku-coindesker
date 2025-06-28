@@ -12,7 +12,7 @@ const CHECK_INTERVAL_SECONDS = 20;
 const WEBHOOK_URL = 'https://kiosuku-production.up.railway.app/incoming';
 
 // CoinDesk API endpoint & limit
-const COINDESK_API_URL = 'https://data-api.coindesk.com/news/v1/article/list?lang=EN&limit=5';
+const COINDESK_API_URL = 'https://data-api.coindesk.com/news/v1/article/list?lang=EN&limit=1';
 
 // pull your API key from Railway config
 const COINDESK_KEY = process.env.COINDESK_KEY;
@@ -40,8 +40,8 @@ async function sendWebhook(article) {
   const payload = {
     timestamp: new Date(article.PUBLISHED_ON * 1000).toISOString(),
     xId: 'CoinDesk API',
-    conversationId: makeRandomConversationId(),
-    tweetID: article.URL,
+    conversationId: `${makeRandomConversationId()}`,
+    tweetID: (article.URL || '').toString(),
     text: `${article.TITLE} — ${article.SUBTITLE}: ${article.BODY}`
   };
   await axios.post(WEBHOOK_URL, payload);

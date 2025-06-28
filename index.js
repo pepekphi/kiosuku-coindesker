@@ -39,7 +39,7 @@ async function sendWebhook(article) {
   const text = subtitle ? `${title} — ${subtitle}: ${body}` : `${title} — ${body}`;
   
   const payload = {
-    timestamp: new Date(article.PUBLISHED_ON * 1000).toISOString(),
+    timestamp: new Date(article.CREATED_ON * 1000).toISOString(),
     xId: 'CoinDesk API',
     conversationId: `${makeRandomConversationId()}`,
     tweetId: urlStr,
@@ -56,11 +56,11 @@ async function checkForNew() {
     const articles = await fetchLatest();
     // sort newest first
     articles
-      .sort((a, b) => b.PUBLISHED_ON - a.PUBLISHED_ON)
+      .sort((a, b) => b.CREATED_ON - a.CREATED_ON)
       .forEach(article => {
-        if (article.PUBLISHED_ON > lastTimestamp) {
+        if (article.CREATED_ON > lastTimestamp) {
           sendWebhook(article).catch(console.error);
-          lastTimestamp = Math.max(lastTimestamp, article.PUBLISHED_ON);
+          lastTimestamp = Math.max(lastTimestamp, article.CREATED_ON);
         }
       });
   } catch (e) {
@@ -80,7 +80,7 @@ async function checkForNew() {
   } else {
     const initial = await fetchLatest();
     if (initial.length) {
-      lastTimestamp = Math.max(...initial.map(a => a.PUBLISHED_ON));
+      lastTimestamp = Math.max(...initial.map(a => a.CREATED_ON));
     }
   }
   setInterval(checkForNew, CHECK_INTERVAL_SECONDS * 1000);

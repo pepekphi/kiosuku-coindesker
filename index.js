@@ -1,3 +1,5 @@
+// IMPORTANT: Make sure to define COINDESK_KEY in environment variables.
+
 require('dotenv').config();
 const axios = require('axios');
 

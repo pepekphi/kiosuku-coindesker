@@ -4,14 +4,9 @@ require('dotenv').config();
 const axios = require('axios');
 
 // ─── CONFIGURATION ────────────────────────────────────────────────────────────
-
-// interval in seconds (change as needed)
-const CHECK_INTERVAL_SECONDS = 20;
-
-// your webhook endpoint
+const CHECK_INTERVAL_SECONDS = 20; // interval in seconds (change as needed)
+const SEND_ON_STARTUP = true; // If true, then it always sends the most recent article on startup. If it is false, then it will not do that, and wait for a new article from now on.
 const WEBHOOK_URL = 'https://kiosuku-production.up.railway.app/incoming';
-
-// CoinDesk API endpoint & limit
 const COINDESK_API_URL = 'https://data-api.coindesk.com/news/v1/article/list?lang=EN&limit=1';
 
 // pull your API key from Railway config
@@ -72,11 +67,14 @@ async function checkForNew() {
 
 // ─── BOOTSTRAP ────────────────────────────────────────────────────────────────
 (async () => {
-  // initialize lastTimestamp so you don’t repost old articles
-  const initial = await fetchLatest();
-  if (initial.length) {
-    lastTimestamp = Math.max(...initial.map(a => a.PUBLISHED_ON));
-  }
   console.log(`Watching for new articles every ${CHECK_INTERVAL_SECONDS}s…`);
+  if (SEND_ON_STARTUP) {
+    await checkForNew();
+  } else {
+    const initial = await fetchLatest();
+    if (initial.length) {
+      lastTimestamp = Math.max(...initial.map(a => a.PUBLISHED_ON));
+    }
+  }
   setInterval(checkForNew, CHECK_INTERVAL_SECONDS * 1000);
 })();

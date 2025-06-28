@@ -36,13 +36,14 @@ async function sendWebhook(article) {
   const title     = article.TITLE     || '';
   const subtitle  = article.SUBTITLE  || '';
   const body      = article.BODY      || '';
+  const text = subtitle ? `${title} — ${subtitle}: ${body}` : `${title} — ${body}`;
   
   const payload = {
     timestamp: new Date(article.PUBLISHED_ON * 1000).toISOString(),
     xId: 'CoinDesk API',
     conversationId: `${makeRandomConversationId()}`,
     tweetId: urlStr,
-    text: `${title} — ${subtitle}: ${body}`
+    text: text
   };
   console.log('🔔 Webhook payload:', payload);
   await axios.post(WEBHOOK_URL, payload, { headers: { 'Content-Type': 'application/json' } });

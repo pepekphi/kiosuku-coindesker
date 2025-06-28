@@ -4,7 +4,7 @@ require('dotenv').config();
 const axios = require('axios');
 
 // ─── CONFIGURATION ────────────────────────────────────────────────────────────
-const CHECK_INTERVAL_SECONDS = 6; // interval in seconds (change as needed)
+const CHECK_INTERVAL_SECONDS = 5; // interval in seconds (change as needed)
 const SEND_ON_STARTUP = false; // If true, then it always sends the most recent article on startup. If it is false, then it will not do that, and wait for a new article from now on.
 const WEBHOOK_URL = 'https://kiosuku-production.up.railway.app/incoming';
 const COINDESK_API_URL = 'https://data-api.coindesk.com/news/v1/article/list?lang=EN&limit=1';
@@ -37,13 +37,18 @@ async function sendWebhook(article) {
   const subtitle  = article.SUBTITLE  || '';
   const body      = article.BODY      || '';
   const text = subtitle ? `${title} — ${subtitle}: ${body}` : `${title} — ${body}`;
+
+  // truncate to 1600 characters if necessary
+  const truncatedText = text.length > 1600
+    ? text.slice(0, 1600) + '…'
+    : text;
   
   const payload = {
     timestamp: new Date(article.CREATED_ON * 1000).toISOString(),
     xId: 'web article', // has to match the EXT item in COINS sheet
     conversationId: `${makeRandomConversationId()}`,
     tweetId: urlStr,
-    text: text
+    text: truncatedText
   };
   console.log('🔔 Webhook payload:', payload);
   await axios.post(WEBHOOK_URL, payload, { headers: { 'Content-Type': 'application/json' } });

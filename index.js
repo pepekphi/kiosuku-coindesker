@@ -62,7 +62,11 @@ async function checkForNew() {
         }
       });
   } catch (e) {
-    console.error('Error checking for new articles:', e.message);
+    if (e.response && e.response.status === 429) {
+      console.warn('⚠️  Rate limit hit! Increase CHECK_INTERVAL_SECONDS.');
+    } else {
+      console.error('Error checking for new articles:', e.message);
+    }
   }
 }
 

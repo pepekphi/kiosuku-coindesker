@@ -32,14 +32,20 @@ async function fetchLatest() {
 }
 
 async function sendWebhook(article) {
+  const urlStr    = (article.URL      || '').toString();
+  const title     = article.TITLE     || '';
+  const subtitle  = article.SUBTITLE  || '';
+  const body      = article.BODY      || '';
+  
   const payload = {
     timestamp: new Date(article.PUBLISHED_ON * 1000).toISOString(),
     xId: 'CoinDesk API',
     conversationId: `${makeRandomConversationId()}`,
-    tweetID: (article.URL || '').toString(),
-    text: `${article.TITLE} — ${article.SUBTITLE}: ${article.BODY}`
+    tweetId: urlStr,
+    text: `${title} — ${subtitle}: ${body}`
   };
-  await axios.post(WEBHOOK_URL, payload);
+  console.log('🔔 Webhook payload:', payload);
+  await axios.post(WEBHOOK_URL, payload, { headers: { 'Content-Type': 'application/json' } });
   console.log('🚀 Sent webhook for', article.GUID);
 }
 

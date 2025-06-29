@@ -4,7 +4,7 @@ require('dotenv').config();
 const axios = require('axios');
 
 // ─── CONFIGURATION ────────────────────────────────────────────────────────────
-const CHECK_INTERVAL_SECONDS = 3; // interval in seconds (change as needed)
+const CHECK_INTERVAL_SECONDS = 2; // Interval in seconds, 1s results in rate limit being hit
 const SEND_ON_STARTUP = false; // If true, then it always sends the most recent article on startup. If it is false, then it will not do that, and wait for a new article from now on.
 const WEBHOOK_URL = 'https://kiosuku-production.up.railway.app/incoming';
 const COINDESK_API_URL = 'https://data-api.coindesk.com/news/v1/article/list?lang=EN&limit=1';

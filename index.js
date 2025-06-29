@@ -1,20 +1,31 @@
-// IMPORTANT: Make sure to define COINDESK_KEY in environment variables.
+// IMPORTANT: Make sure to define COINDESK_KEY in environment variables. Use komma as a delimiter to define multiple keys to avoid rate limits.
 
 require('dotenv').config();
 const axios = require('axios');
 
 // ─── CONFIGURATION ────────────────────────────────────────────────────────────
-const CHECK_INTERVAL_SECONDS = 300; // Interval in seconds, 1s results in rate limit being hit
+const CHECK_INTERVAL_SECONDS = 2.18; // Interval in seconds, 19 API keys are needed so that we can check once every 2.16 seconds (the best possible performance without hitting rate limits).
 const SEND_ON_STARTUP = false; // If true, then it always sends the most recent article on startup. If it is false, then it will not do that, and wait for a new article from now on.
 const WEBHOOK_URL = 'https://kiosuku-production.up.railway.app/incoming';
 const COINDESK_API_URL = 'https://data-api.coindesk.com/news/v1/article/list?lang=EN&limit=1';
 
-// pull your API key from Railway config
-const COINDESK_KEY = process.env.COINDESK_KEY;
-if (!COINDESK_KEY) {
+// ─── MULTI-KEY SETUP ───────────────────────────────────────────────────────────
+// Pull raw comma-separated keys from environment
+const rawKeys = process.env.COINDESK_KEY;
+if (!rawKeys) {
   console.error('Environment variable COINDESK_KEY is required.');
   process.exit(1);
 }
+
+// Split on commas, trim whitespace, drop any empty entries
+const COINDESK_KEYS = rawKeys.split(',').map(k => k.trim()).filter(k => k);
+if (COINDESK_KEYS.length === 0) {
+  console.error('Environment variable COINDESK_KEY does not contain any valid keys.');
+  process.exit(1);
+}
+
+// Start at a random key index, to avoid always beginning with the first key
+let keyIndex = Math.floor(Math.random() * COINDESK_KEYS.length);
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let lastTimestamp = 0;
@@ -25,8 +36,12 @@ function makeRandomConversationId() {
 }
 
 async function fetchLatest() {
+  // Pick current key, then advance pointer for next call
+  const apiKey = COINDESK_KEYS[keyIndex];
+  keyIndex = (keyIndex + 1) % COINDESK_KEYS.length;
+
   const res = await axios.get(COINDESK_API_URL, {
-    headers: { 'X-API-Key': COINDESK_KEY }
+    headers: { 'X-API-Key': apiKey }
   });
   return res.data.Data || [];
 }
